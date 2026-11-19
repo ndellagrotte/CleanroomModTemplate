@@ -14,6 +14,8 @@ Every other option is documented next to its property in `gradle.properties`.
 
 The version is computed from git tags. Tag `1.0.0` on `main` to release it, `./gradlew -q printVersion` prints the current value.
 
+Releases go to GitHub only. To also publish to CurseForge or Modrinth, set the project ID in `gradle.properties`, add the matching token secret, and set `publish-mods: true` in `.github/workflows/release.yml`.
+
 ## Tokens
 
 `@{NAME}` markers in classes and resources are replaced at build time. `tokens.properties` declares them.
