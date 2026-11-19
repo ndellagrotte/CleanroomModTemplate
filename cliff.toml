@@ -152,6 +152,9 @@ sort_commits = "newest"
 #
 # pack: is the opt-in multi-change squash type. Nested body lines are
 # often GitHub bullets; strip those so they parse as conventional commits.
+# GitHub also writes a horizontal rule above the Co-authored-by trailers it
+# appends on squash merge. In a pack body that line keeps its newline and
+# splits off as its own commit, so drop every rule-only line first.
 # split_commits is global, so non-pack bodies are collapsed onto the subject
 # line with FF, which git-cliff's lines() does not split on. Co-authored-by
 # lines keep their newline so they split off into the Co-authors group, which
@@ -162,6 +165,7 @@ sort_commits = "newest"
 # message being multi-line and the pack check lives in the awk program.
 commit_preprocessors = [
     { pattern = '\s*\((\w+\s)?#([0-9]+)\)', replace = "" },
+    { pattern = '(?m)^[ \t]*[-*_]{3,}[ \t]*\n?', replace = "" },
     { pattern = '(?m)^[ \t]*[-*][ \t]+', replace = "" },
     { pattern = '(?s)^.*\n', replace_command = '''awk 'NR==1 && /^pack[(!:]/ {pack=1} {printf "%s%s", (NR==1 ? "" : (pack || tolower($0) ~ /^co-authored-by:/ ? "\n" : "\f")), $0}' ''' },
 ]
@@ -185,6 +189,8 @@ commit_parsers = [
     { message = "^Merge", skip = true },
     { message = "^revert", skip = true },
     { message = "^Signed-off-by", skip = true },
-    { message = "^Co-authored-by", group = "<!-- 10 -->Co-authors" },
+    # Local change, re-apply after `extractConventions`: (?i) so that `Co-Authored-By:` is folded into the
+    # byline too, rather than listed under Other as an entry of its own.
+    { message = "(?i)^Co-authored-by", group = "<!-- 10 -->Co-authors" },
     { message = ".*", group = "<!-- 9 -->Other" }
 ]
